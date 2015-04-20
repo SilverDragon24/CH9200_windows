@@ -1,0 +1,263 @@
+; CH9100NIC.inf
+; Driver for CH9100 USB Miniport Ethernet Adapter
+; For windows XP/VISTA/7/8,server 2003/2008,and 64bit os
+; Copyright (c) 2001-2013 Corporation.  All rights reserved.
+; Ver V1.0
+
+[version]
+Signature   = "$Windows NT$"
+Class       = Net
+ClassGUID   = {4d36e972-e325-11ce-bfc1-08002be10318}
+Provider    = %WinChipHead%
+DriverVer   = 01/21/2013,1.0.0.0
+CatalogFile.NT = CH9100NIC.CAT
+
+[ControlFlags]
+ExcludeFromSelect = USB\VID_1A86&PID_E091,USB\VID_1A86&PID_E092,USB\VID_1A86&PID_8339
+
+[Manufacturer]
+%WinChipHead% = WinChipHead,NTx86,NTamd64
+
+; For x86 XP and later
+[WinChipHead.NTx86]
+%CH9100NIC.DeviceDesc%    = CH9100NIC.ndi, USB\VID_1A86&PID_E091
+%CH9200NIC.DeviceDesc%    = CH9100NIC.ndi, USB\VID_1A86&PID_E092
+%USB20NIC.DeviceDesc%     = CH9100NIC.ndi, USB\VID_1A86&PID_8339
+
+; For amd64 XP and later
+[WinChipHead.NTamd64]
+%CH9100NIC.DeviceDesc%    = CH9100NIC.ndi.NTamd64, USB\VID_1A86&PID_E091
+%CH9200NIC.DeviceDesc%    = CH9100NIC.ndi.NTamd64, USB\VID_1A86&PID_E092
+%USB20NIC.DeviceDesc%     = CH9100NIC.ndi.NTamd64, USB\VID_1A86&PID_8339
+
+[CH9100NIC.ndi]
+Characteristics = 0x84 ; NCF_PHYSICAL
+BusType		= 15 ; if you specify NCF_PHYSICAL, you must specify bustype
+AddReg          = CH9100NIC.Reg, ParamsPromiscuous
+CopyFiles       = CH9100NIC.CopyFiles
+
+[CH9100NIC.ndi.Services]
+AddService      = CH9100NIC, 2, CH9100NIC.Service, CH9100NIC.EventLog
+
+[CH9100NIC.Service]
+DisplayName     = %CH9100NIC.Service.DispName%
+ServiceType     = 1 ;%SERVICE_KERNEL_DRIVER%
+StartType       = 3 ;%SERVICE_DEMAND_START%
+ErrorControl    = 1 ;%SERVICE_ERROR_NORMAL%
+ServiceBinary   = %12%\CH9100NIC.sys
+LoadOrderGroup  = NDIS,NTKERN,NDIS
+AddReg          = TextModeFlags.Reg
+
+[CH9100NIC.CopyFiles]
+CH9100NIC.sys,,,2
+
+[CH9100NIC.ndi.NTamd64]
+Characteristics = 0x84 ; NCF_PHYSICAL
+BusType		= 15 ; if you specify NCF_PHYSICAL, you must specify bustype
+AddReg          = CH9100NIC.Reg, ParamsPromiscuous
+CopyFiles       = CH9100NIC.CopyFilesA64
+
+[CH9100NIC.ndi.NTamd64.Services]
+AddService      = CH9100NICA64, 2, CH9100NIC.ServiceA64, CH9100NIC.EventLog
+
+[CH9100NIC.ServiceA64]
+DisplayName     = %CH9100NIC.Service.DispNameA64%
+ServiceType     = 1 ;%SERVICE_KERNEL_DRIVER%
+StartType       = 3 ;%SERVICE_DEMAND_START%
+ErrorControl    = 1 ;%SERVICE_ERROR_NORMAL%
+ServiceBinary   = %12%\CH9100NIC64.sys
+LoadOrderGroup  = NDIS
+AddReg          = TextModeFlags.Reg
+
+[CH9100NIC.CopyFilesA64]
+CH9100NIC64.sys,,,2
+
+; Microsoft Virtual Miniport Common
+[CH9100NIC.Reg]
+HKR,    ,                         BusNumber,           0, "0" 
+HKR, Ndi,                         Service,             0, "CH9100NIC"
+HKR, Ndi\Interfaces,              UpperRange,          0, "ndis5"
+HKR, Ndi\Interfaces,              LowerRange,          0, "ethernet"
+
+[ParamsPromiscuous]
+;Should the physical NIC be set to Promiscuous mode 
+HKR, Ndi\Params\Promiscuous,     ParamDesc, , %Promiscuous%
+HKR, Ndi\Params\Promiscuous,     Default,  ,"0"
+HKR, Ndi\Params\Promiscuous,     type, 0 ,      enum
+HKR, Ndi\Params\Promiscuous\enum,"1",  ,     %Enable%
+HKR, Ndi\Params\Promiscuous\enum,"0",  ,     %Disable%
+
+;NetworkAddress
+HKR, NDI\params\NetworkAddress,       ParamDesc,       0, %NetworkAddress%
+HKR, NDI\params\NetworkAddress,       type,            0, "edit"
+HKR, NDI\params\NetworkAddress,       LimitText,       0, "12"
+HKR, NDI\params\NetworkAddress,       UpperCase,       0, "1"
+HKR, NDI\params\NetworkAddress,       default,         0, " "
+HKR, NDI\params\NetworkAddress,       optional,        0, "1"
+
+;LinkDuplexMode
+HKR, NDI\params\LinkDuplexMode,       ParamDesc,       , %LinkDuplexMode%
+HKR, Ndi\Params\LinkDuplexMode,     Default,  ,"0"
+HKR, Ndi\Params\LinkDuplexMode,     type,0 ,      enum
+HKR, Ndi\Params\LinkDuplexMode\enum,"0",  ,     %SpeedDuplexAuto%
+HKR, Ndi\Params\LinkDuplexMode\enum,"1",  ,     %SpeedDuplex10MBHD%
+HKR, Ndi\Params\LinkDuplexMode\enum,"2",  ,     %SpeedDuplex10MBFD%
+;HKR, Ndi\Params\LinkDuplexMode\enum,"3",  ,     %SpeedDuplex100MBHD%
+;HKR, Ndi\Params\LinkDuplexMode\enum,"4",  ,     %SpeedDuplex100MBFD%
+
+;WakeUpMode
+HKR, NDI\params\WakeUpMode,       ParamDesc,       , %WakeUpMode%
+HKR, Ndi\Params\WakeUpMode,     Default,  ,"0"
+HKR, Ndi\Params\WakeUpMode,     type,0 ,      enum
+HKR, Ndi\Params\WakeUpMode\enum,"0",  ,     %WakeUpModeNone%
+HKR, Ndi\Params\WakeUpMode\enum,"1",  ,     %WakeUpModeAll%
+HKR, Ndi\Params\WakeUpMode\enum,"2",  ,     %WakeUpModeLinkChange0%
+HKR, Ndi\Params\WakeUpMode\enum,"3",  ,     %WakeUpModeMagicPacket%
+HKR, Ndi\Params\WakeUpMode\enum,"4",  ,     %WakeUpModeWakeUpPacket%
+
+;FlowCtrl
+HKR, Ndi\Params\FlowCtrl,     ParamDesc, , %FlowCtrl%
+HKR, Ndi\Params\FlowCtrl,     Default,  ,"0"
+HKR, Ndi\Params\FlowCtrl,     type, 0 ,      enum
+HKR, Ndi\Params\FlowCtrl\enum,"1",  ,     %Enable%
+HKR, Ndi\Params\FlowCtrl\enum,"0",  ,     %Disable%
+
+;FlowCtrlRxHigh
+HKR, Ndi\Params\FlowCtrlRxHigh,     ParamDesc, 0 , %FlowCtrlRxHigh%
+HKR, Ndi\Params\FlowCtrlRxHigh,     Default  , 0 , "14"
+HKR, Ndi\Params\FlowCtrlRxHigh,     type,0 ,      enum
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"0",  ,     %FlowCtrlRx0%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"1",  ,     %FlowCtrlRx1%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"2",  ,     %FlowCtrlRx2%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"3",  ,     %FlowCtrlRx3%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"4",  ,     %FlowCtrlRx4%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"5",  ,     %FlowCtrlRx5%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"6",  ,     %FlowCtrlRx6%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"7",  ,     %FlowCtrlRx7%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"8",  ,     %FlowCtrlRx8%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"9",  ,     %FlowCtrlRx9%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"10",  ,    %FlowCtrlRxA%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"11",  ,    %FlowCtrlRxB%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"12",  ,    %FlowCtrlRxC%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"13",  ,    %FlowCtrlRxD%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"14",  ,    %FlowCtrlRxE%
+HKR, Ndi\Params\FlowCtrlRxHigh\enum,"15",  ,    %FlowCtrlRxF%
+
+;FlowCtrlRxLow
+HKR, Ndi\Params\FlowCtrlRxLow,      ParamDesc, 0 , %FlowCtrlRxLow%
+HKR, Ndi\Params\FlowCtrlRxLow,      Default  , 0 , "8"
+HKR, Ndi\Params\FlowCtrlRxLow,     type,0 ,      enum
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"0",  ,     %FlowCtrlRx0%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"1",  ,     %FlowCtrlRx1%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"2",  ,     %FlowCtrlRx2%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"3",  ,     %FlowCtrlRx3%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"4",  ,     %FlowCtrlRx4%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"5",  ,     %FlowCtrlRx5%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"6",  ,     %FlowCtrlRx6%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"7",  ,     %FlowCtrlRx7%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"8",  ,     %FlowCtrlRx8%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"9",  ,     %FlowCtrlRx9%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"10",  ,    %FlowCtrlRxA%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"11",  ,    %FlowCtrlRxB%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"12",  ,    %FlowCtrlRxC%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"13",  ,    %FlowCtrlRxD%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"14",  ,    %FlowCtrlRxE%
+HKR, Ndi\Params\FlowCtrlRxLow\enum,"15",  ,    %FlowCtrlRxF%
+
+;BKJamLen
+HKR, NDI\params\BKJamLen,       ParamDesc,       , %BKJamLen%
+HKR, Ndi\Params\BKJamLen,     Default,  ,"0"
+HKR, Ndi\Params\BKJamLen,     type,0 ,      enum
+HKR, Ndi\Params\BKJamLen\enum,"0",  ,     %BKJamLen0%
+HKR, Ndi\Params\BKJamLen\enum,"1",  ,     %BKJamLen1%
+HKR, Ndi\Params\BKJamLen\enum,"2",  ,     %BKJamLen2%
+HKR, Ndi\Params\BKJamLen\enum,"3",  ,     %BKJamLen3%
+HKR, Ndi\Params\BKJamLen\enum,"4",  ,     %BKJamLen4%
+HKR, Ndi\Params\BKJamLen\enum,"5",  ,     %BKJamLen5%
+HKR, Ndi\Params\BKJamLen\enum,"6",  ,     %BKJamLen6%
+HKR, Ndi\Params\BKJamLen\enum,"7",  ,     %BKJamLen7%
+HKR, Ndi\Params\BKJamLen\enum,"8",  ,     %BKJamLen8%
+HKR, Ndi\Params\BKJamLen\enum,"9",  ,     %BKJamLen9%
+HKR, Ndi\Params\BKJamLen\enum,"10",  ,    %BKJamLena%
+
+[CH9100NIC.EventLog]
+AddReg = CH9100NIC.AddEventLog.Reg
+
+[CH9100NIC.AddEventLog.Reg]
+HKR, , EventMessageFile, 0x00020000, "%%SystemRoot%%\System32\netevent.dll"
+HKR, , TypesSupported,   0x00010001, 7
+
+[TextModeFlags.Reg]
+HKR, , TextModeFlags,    0x00010001, 0x0001
+
+[SourceDisksNames]
+1 = %DiskId1%,,,""
+
+[SourceDisksFiles]
+CH9100NIC.sys  = 1,,
+CH9100NIC64.sys  = 1,,
+
+; DestinationDirs
+[DestinationDirs]
+CH9100NIC.CopyFiles = 12
+CH9100NIC.CopyFilesA64 = 12
+
+[Strings]
+WinChipHead               = "CH9100"                      
+CH9100NIC.DeviceDesc        = "CH9100 USB Miniport Ethernet Adapter"
+CH9200NIC.DeviceDesc        = "CH9200 USB Ethernet Adapter"
+USB20NIC.DeviceDesc         = "USB 2.0 Miniport Ethernet Adapter"
+CH9100NIC.Service.DispName  = "CH9100NIC Service"
+CH9100NIC.Service.DispNameA64  = "CH9100 USB Miniport Ethernet Adapter Service"
+DiskId1                   = "CH9100 USB Miniport Ethernet Adapter Device Installation Disk #1"
+Promiscuous               = "PromiscuousMode"
+NetworkAddress            = "NetworkAddress"
+LinkDuplexMode            = "LinkSpeed/DuplexMode"
+SpeedDuplexAuto           = "Auto"
+SpeedDuplex10MBHD         = "10MB Half"
+SpeedDuplex10MBFD         = "10MB Full"
+SpeedDuplex100MBHD        = "100MB Half"
+SpeedDuplex100MBFD        = "100MB Full"
+
+WakeUpMode                = "WakeUpMode"
+WakeUpModeNone            = "None"
+WakeUpModeAll             = "All"
+WakeUpModeLinkChange0     = "Link Change"
+WakeUpModeMagicPacket     = "Magic Packet"
+WakeUpModeWakeUpPacket    = "WakeUp Packet"
+
+FlowCtrl                  = "FlowCtrl"
+FlowCtrlRx0               = "0"
+FlowCtrlRx1               = "1"
+FlowCtrlRx2               = "2"
+FlowCtrlRx3               = "3"
+FlowCtrlRx4               = "4"
+FlowCtrlRx5               = "5"
+FlowCtrlRx6               = "6"
+FlowCtrlRx7               = "7"
+FlowCtrlRx8               = "8"
+FlowCtrlRx9               = "9"
+FlowCtrlRxA               = "10"
+FlowCtrlRxB               = "11"
+FlowCtrlRxC               = "12"
+FlowCtrlRxD               = "13"
+FlowCtrlRxE               = "14"
+FlowCtrlRxF               = "15"
+
+FlowCtrlRxHigh            = "FlowCtrlRxHighThreshold"
+FlowCtrlRxLow             = "FlowCtrlRxLowThreshold"
+BKJamLen                  = "Back Pressure Jam len"
+BKJamLen0                 = " 4 bytes"
+BKJamLen1                 = " 8 bytes"
+BKJamLen2                 = " 16 bytes"
+BKJamLen3                 = " 32 bytes"
+BKJamLen4                 = " 64 bytes"
+BKJamLen5                 = " 128 bytes"
+BKJamLen6                 = " 256 bytes"
+BKJamLen7                 = " 512 bytes"
+BKJamLen8                 = " 1024 bytes"
+BKJamLen9                 = " 1518 bytes"
+BKJamLena                 = " 2048 bytes"
+
+Disable                   = "Disable"
+Enable                    = "Enable"
